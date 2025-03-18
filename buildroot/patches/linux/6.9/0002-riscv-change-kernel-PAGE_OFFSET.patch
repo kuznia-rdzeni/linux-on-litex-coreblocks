@@ -1,0 +1,26 @@
+From fbcd39ddb87f49908750c70ee812591d5bd24a80 Mon Sep 17 00:00:00 2001
+From: Piotr Wegrzyn <piotro@piotro.eu>
+Date: Wed, 29 Jan 2025 01:01:21 +0100
+Subject: [PATCH] riscv: change kernel PAGE_OFFSET
+
+doesn't change via .config for some readon
+---
+ arch/riscv/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 9c94f233e..6c1471a38 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -247,7 +247,7 @@ config MMU
+ config PAGE_OFFSET
+ 	hex
+ 	default 0xC0000000 if 32BIT && MMU
+-	default 0x80000000 if !MMU
++	default 0x40000000 if !MMU
+ 	default 0xff60000000000000 if 64BIT
+ 
+ config KASAN_SHADOW_OFFSET
+-- 
+2.48.1
+
