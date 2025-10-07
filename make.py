@@ -28,8 +28,7 @@ class Board:
         prog.flash(0, filename)
 
     def setup_soc(self, soc):
-        soc.add_switches()
-        soc.add_leds()
+        soc.add_extras()
 
 class TerasicDe2115Board(Board):
     board_name = "terasic_de2_115"
@@ -53,14 +52,15 @@ class ArtyA7Board(Board):
         super().__init__(soc_cls=digilent_arty.BaseSoC)
 
         self.soc_kwargs.update(**{
-            "sys_clk_freq": 30e6,
+            "sys_clk_freq": 40e6,
             "l2_size": 512,
-            "toolchain": "openxc7",
+            "toolchain": "vivado",
         })
 
     def setup_soc(self, soc):
         from litex_boards.platforms import digilent_arty
         super().setup_soc(soc)
+        # antmicro arty PMOD expansion board with sdcard
         soc.platform.add_extension(digilent_arty._sdcard_pmod_io)
         soc.add_sdcard()
 

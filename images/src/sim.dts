@@ -7,21 +7,21 @@
     #size-cells    = <1>;
 
     chosen {
-        bootargs = "console=liteuart earlycon=liteuart,0xe0002000 rootwait root=/dev/ram0";
-        linux,initrd-start = <0x41000000>;
-        linux,initrd-end   = <0x41800000>;
+        bootargs = "console=ttyLXU0,115200 earlycon=liteuart,0xe8007000 lpj=90000 rootwait root=/dev/ram0 rw";
+        linux,initrd-start = <0x82000000>;
+        linux,initrd-end   = <0x82100000>;
     };
-    
-    sys_clk: clock-100000000 {
+
+    sys_clk: clock-1000 {
         compatible = "fixed-clock";
         #clock-cells = <0>;
-        clock-frequency  = <10000>;
+        clock-frequency  = <1000>;
     };
 
 	cpus {
         #address-cells = <1>;
         #size-cells    = <0>;
-        timebase-frequency = <10000>;
+        timebase-frequency = <1000>;
 
         CPU0: cpu@0 {
             device_type = "cpu";
@@ -31,7 +31,7 @@
             riscv,isa-extensions = "a", "i", "m";
             mmu-type = "riscv,none";
             reg = <0>;
-            clock-frequency = <10000>;
+            clock-frequency = <1000>;
             status = "okay";
 
 			hlic: interrupt-controller {
@@ -43,9 +43,9 @@
 		};
 	};
 
-    memory: memory@40000000 {
+    memory: memory@80000000 {
         device_type = "memory";
-        reg = <0x40000000 0x4000000>;
+        reg = <0x80000000 0x04000000>;
     };
 
     soc {
@@ -55,24 +55,23 @@
         interrupt-parent = <&hlic>;
         ranges;
 
-        soc_ctrl0: soc_controller@e0000000 {
+        soc_ctrl0: soc_controller@e8000000 {
             compatible = "litex,soc-controller";
-            reg = <0xe0000000 0xc>;
+            reg = <0xe8000000 0xc>;
             status = "okay";
         };
 
-        liteuart0: serial@e0002000 {
+        liteuart0: serial@e8007000 {
             compatible = "litex,liteuart";
-            reg = <0xe0002000 0x100>;
+            reg = <0xe8007000 0x100>;
             interrupts = <16>;
             status = "okay";
         };
-        
+
         clint: clint@e1000000 {
 			interrupts = <0x03 0x07>;
-			//reg = <0x00 0xe1000000 0x00 0x10000>;
 			reg = <0xe1000000 0xc000>;
-			compatible = "sifive,clint0\0riscv,clint0";
+			compatible = "sifive,clint0";
 		};
     };
 
