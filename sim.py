@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 
-#
-# This file is part of Linux-on-LiteX-VexRiscv
-#
-# Copyright (c) 2019-2024, Linux-on-LiteX-VexRiscv Developers
-# SPDX-License-Identifier: BSD-2-Clause
-
 import json
 import argparse
 
@@ -21,16 +15,10 @@ from litex.build.sim.verilator    import verilator_build_args, verilator_build_a
 from litex.soc.interconnect.csr       import *
 from litex.soc.integration.soc_core   import *
 from litex.soc.integration.builder    import *
-from litex.soc.interconnect           import wishbone
-from litex.soc.cores.cpu.vexriscv_smp import VexRiscvSMP
 
 from litedram import modules as litedram_modules
 from litedram.phy.model       import SDRAMPHYModel
 from litex.tools.litex_sim    import sdram_module_nphases, get_sdram_phy_settings
-from litedram.core.controller import ControllerSettings
-
-from liteeth.phy.model import LiteEthPHYModel
-from liteeth.mac       import LiteEthMAC
 
 from litex.tools.litex_json2dts_linux import generate_dts
 
@@ -70,62 +58,82 @@ class Supervisor(LiteXModule):
 # SoCLinux -----------------------------------------------------------------------------------------
 
 class SoCLinux(SoCCore):
+    mem_map_sim = {
+        "main_ram":     0x80000000,
+        "csr":          0xe0000000,
+    }
+
     def __init__(self, sys_clk_freq=int(100e6),
-        init_memories    = False,
-        sdram_module     = "MT48LC16M16",
-        sdram_data_width = 32,
-        sdram_verbosity  = 0
+        init_memories    = True
     ):
         # Platform ---------------------------------------------------------------------------------
         platform     = Platform()
         out_countr = Signal(64)
 
-        # RAM Init ---------------------------------------------------------------------------------
-        ram_init = []
-        if init_memories:
-            ram_init = get_mem_data("images/boot.json", endianness="little", offset=0x40000000) # offset?
-
         # CRG --------------------------------------------------------------------------------------
         self.crg = CRG(platform.request("sys_clk"))
 
         # SoCCore ----------------------------------------------------------------------------------
-        SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
+        soc = SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
             cpu_type            = "coreblocks",
-            cpu_variant         = "standard",
+            cpu_variant         = "small_linux",
             integrated_rom_size = 0x10000,
             uart_name           = "sim",
         )
+        self.mem_map.update(self.mem_map_sim)
         self.add_config("DISABLE_DELAYS")
         
         serial = platform.lookup_request("serial")
-        self.sync += If(serial.source_valid, out_countr.eq(out_countr+1))
-        self.comb += platform.trace.eq(out_countr >= 955+88+8) # On Liftoff
 
-        # Boot from OpenSBI.
-        #self.add_constant("ROM_BOOT_ADDRESS", self.bus.regions["opensbi"].origin)
-        #self.add_constant("ROM_BOOT_ADDRESS", self.bus.regions["Image"].origin)
-        #print(self.bus.regions)
-        #self.add_constant("ROM_BOOT_ADDRESS", self.bus.regions["main_ram"].origin)
-        self.add_constant("ROM_BOOT_ADDRESS", 0x40000000)
+        # Trace Trigger -----------------------------------------------------------------------------
+        # Use global --trace option to enable traces (dump in build/sim/gateware/)
+        
+        # # Trigger recording on UART Liftoff
+        # # self.sync += If(serial.source_valid, out_countr.eq(out_countr+1))
+        # # self.comb += platform.trace.eq(out_countr >= 1051)
+       
+        # # Trigger recording in cycle window after 'o)' char sequence
+        # trace_start = Signal()
+        # prev_char = Signal(8)
+        # self.sync += If(serial.source_valid, prev_char.eq(serial.source_data))
+        # self.sync += If(trace_start, out_countr.eq(out_countr+1))
+        # self.sync += If(serial.source_valid & (serial.source_data == ord(')')) & (prev_char == ord('o')), trace_en.eq(1))
+        # self.comb += platform.trace.eq(trace_start & (out_countr < 1000000))
+
+        self.comb += platform.trace.eq(1)
+
+        # Memory boot ------------------------------------------------------------------------------
+        
+        # Fixed for no-mmu configs. Linux `Image` must be loaded at this address in boot.json
+        # DTB must be built into kernel, because boot.json 'bootargs' setup to set 'r2' (with dtb pointer)
+        # before switch to Linux image from BIOS is not supported.
+        boot_addr = 0x8000_0000
+        # Macro for LiteX BIOS to define fallback boot address (always used here).
+        # Disabling serial boot manually in sources is recommended to not wait for timeout.
+        self.add_constant("ROM_BOOT_ADDRESS", boot_addr)
 
         # Supervisor -------------------------------------------------------------------------------
         self.supervisor = Supervisor()
 
         # SDRAM ------------------------------------------------------------------------------------
-        sdram_clk_freq   = int(100e6) # FIXME: use 100MHz timings
+        ram_init = []
+        if init_memories:
+            ram_init = get_mem_data("images/boot.json", endianness="little", offset=boot_addr)
+        
+        sdram_module = "MT48LC16M16"
+        sdram_clk_freq   = int(100e6)
         sdram_module_cls = getattr(litedram_modules, sdram_module)
         sdram_rate       = "1:{}".format(sdram_module_nphases[sdram_module_cls.memtype])
         sdram_module     = sdram_module_cls(sdram_clk_freq, sdram_rate)
         phy_settings     = get_sdram_phy_settings(
             memtype    = sdram_module.memtype,
-            data_width = sdram_data_width,
+            data_width = 32,
             clk_freq   = sdram_clk_freq,
         )
         self.sdrphy = SDRAMPHYModel(
             module    = sdram_module,
             settings  = phy_settings,
             clk_freq  = sdram_clk_freq,
-            verbosity = sdram_verbosity,
             init      = ram_init,
         )
         self.add_sdram("sdram",
@@ -136,53 +144,29 @@ class SoCLinux(SoCCore):
 
         self.add_constant("SDRAM_TEST_DISABLE") # Skip SDRAM test to avoid corrupting pre-initialized contents.
 
-    def generate_dts(self, board_name):
+    def _generate_dts(self, board_name):
         json_src = os.path.join("build", board_name, "csr.json")
         dts = os.path.join("build", board_name, "{}.dts".format(board_name))
         with open(json_src) as json_file, open(dts, "w") as dts_file:
             dts_content = generate_dts(json.load(json_file))
             dts_file.write(dts_content)
 
-    def compile_dts(self, board_name):
-        dts = os.path.join("build", board_name, "{}.dts".format(board_name))
-        dtb = os.path.join("images", "rv32.dtb")
-        os.system("dtc -O dtb -o {} {}".format(dtb, dts))
-
 # Build --------------------------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Linux on LiteX-VexRiscv Simulation.")
-    parser.add_argument("--with-sdram",       action="store_true",   help="Enable SDRAM support.")
-    parser.add_argument("--sdram-module",     default="MT48LC16M16", help="Select SDRAM chip.")
-    parser.add_argument("--sdram-data-width", default=32,            help="Set SDRAM chip data width.")
-    parser.add_argument("--sdram-verbosity",  default=0,             help="Set SDRAM checker verbosity.")
-#    VexRiscvSMP.args_fill(parser)
+    parser = argparse.ArgumentParser(description="Linux on LiteX Coreblocks Simulation.")
     verilator_build_args(parser)
     args = parser.parse_args()
 
-    #VexRiscvSMP.args_read(args)
     verilator_build_kwargs = verilator_build_argdict(args)
     sim_config = SimConfig(default_clk="sys_clk")
     sim_config.add_module("serial2console", "serial")
 
-    for i in range(2):
-        prepare = (i == 0)
-        run     = (i == 1)
-        soc = SoCLinux(
-            init_memories    = run,
-            sdram_module     = args.sdram_module,
-            sdram_data_width = int(args.sdram_data_width),
-            sdram_verbosity  = int(args.sdram_verbosity)
-        )
-        board_name = "sim"
-        build_dir  = os.path.join("build", board_name)
-        builder = Builder(soc, output_dir=build_dir,
-            compile_gateware = run,
-            csr_json         = os.path.join(build_dir, "csr.json"))
-        builder.build(sim_config=sim_config, run=run, **verilator_build_kwargs)
-        if prepare:
-            soc.generate_dts(board_name)
-            soc.compile_dts(board_name)
+    soc = SoCLinux()
+    board_name = "sim"
+    build_dir  = os.path.join("build", board_name)
+    builder = Builder(soc, output_dir=build_dir, csr_json=os.path.join(build_dir, "csr.json"))
+    builder.build(sim_config=sim_config, **verilator_build_kwargs)
 
 if __name__ == "__main__":
     main()

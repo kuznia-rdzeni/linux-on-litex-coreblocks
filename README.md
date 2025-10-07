@@ -34,11 +34,17 @@ Build Linux with Buildroot
 --------------------------
 
 ```bash
-cd .. # (In separate directory)
-git clone http://github.com/buildroot/buildroot
-cd buildroot
-make BR2_EXTERNAL=linux-on-litex-coreblocks/buildroot/ litex_coreblocks_defconfig
-make -j 6
+git clone https://github.com/buildroot/buildroot --branch 2025.08.x --depth 1 build_buildroot
+
+# Select and link device tree file (repeat this and next commands for rtl/sim change) 
+# For FPGA target:
+ln -sf images/src/litex_coreblocks.dts images/rv32_litex_coreblocks.dts
+# For simulation target:
+#ln -sf images/src/sim.dts images/rv32_litex_coreblocks.dts
+
+cd build_buildroot
+make BR2_EXTERNAL=../buildroot/ litex_coreblocks_defconfig
+make -j $(nproc)
 ```
 
 Build and load bitstream
@@ -88,11 +94,9 @@ make.py options
 Customization tips
 ------------------
 
-(TODO)
-
 * Use buildroot/rootfsoverlay to add files.
-* Nice `packages/` included (manal build required).
-* Look at buildroot menuconfig and menuconfig from linux downloaded by buildroot (`output/build/`).
+* Look at buildroot `make menuconfig` and `ARCH=riscv make menuconfig` from linux downloaded by buildroot (`build_buildroot/output/build/linux-6.9/`).
+* Some extra `packages/` included (manal build required).
 
 Notes
 -----

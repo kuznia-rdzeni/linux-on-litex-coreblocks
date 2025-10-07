@@ -53,9 +53,9 @@ class ArtyA7Board(Board):
         super().__init__(soc_cls=digilent_arty.BaseSoC)
 
         self.soc_kwargs.update(**{
-            "sys_clk_freq": 30e6,
+            "sys_clk_freq": 40e6,
             "l2_size": 512,
-            "toolchain": "openxc7",
+            "toolchain": "vivado",
         })
 
     def setup_soc(self, soc):

@@ -2,26 +2,27 @@
 
 / {
     compatible = "litex,sim", "litex,soc";
-    model = "sim";
+    model = "litex-coreblocks";
     #address-cells = <1>;
     #size-cells    = <1>;
 
     chosen {
-        bootargs = "console=liteuart earlycon=liteuart,0xe0002000 rootwait root=/dev/ram0";
-        linux,initrd-start = <0x41000000>;
-        linux,initrd-end   = <0x41800000>;
+        //bootargs = "console=devLXU0,115200 earlycon=liteuart,0xe0007000 rootwait root=/dev/ram0";
+        bootargs = "console=liteuart0 earlycon=liteuart,0xe0007000 rootwait root=/dev/ram0";
+        linux,initrd-start = <0x81000000>; // NOTE: update in post-image.sh if changed
+        linux,initrd-end   = <0x81000000>; // relpaced by post-image.sh to real initrd size
     };
     
-    sys_clk: clock-100000000 {
+    sys_clk: clock-40000000 {
         compatible = "fixed-clock";
         #clock-cells = <0>;
-        clock-frequency  = <10000>;
+        clock-frequency  = <40000000>;
     };
 
 	cpus {
         #address-cells = <1>;
         #size-cells    = <0>;
-        timebase-frequency = <10000>;
+        timebase-frequency = <40000000>;
 
         CPU0: cpu@0 {
             device_type = "cpu";
@@ -31,21 +32,20 @@
             riscv,isa-extensions = "a", "i", "m";
             mmu-type = "riscv,none";
             reg = <0>;
-            clock-frequency = <10000>;
+            clock-frequency = <40000000>;
             status = "okay";
 
 			hlic: interrupt-controller {
-				compatible = "riscv,cpu-intc";
-				#address-cells = <1>;
 				#interrupt-cells = <1>;
+				compatible = "coreblocks,coreblocks-cpu-intc", "riscv,cpu-intc";
 				interrupt-controller;
 			};
 		};
 	};
 
-    memory: memory@40000000 {
+    memory: memory@80000000 {
         device_type = "memory";
-        reg = <0x40000000 0x4000000>;
+        reg = <0x80000000 0x4000000>;
     };
 
     soc {
@@ -61,19 +61,30 @@
             status = "okay";
         };
 
-        liteuart0: serial@e0002000 {
+        liteuart0: serial@e0007000 {
             compatible = "litex,liteuart";
-            reg = <0xe0002000 0x100>;
-            interrupts = <16>;
+            reg = <0xe0007000 0x100>;
+            interrupts = <0x10>;
             status = "okay";
         };
         
+        /*
+        liteuart1: serial@e0007800 {
+            compatible = "litex,liteuart";
+            reg = <0xe0007800 0x100>;
+            interrupts = <0x18>;
+            status = "okay";
+        };
+        */
+        
         clint: clint@e1000000 {
-			interrupts = <0x03 0x07>;
-			//reg = <0x00 0xe1000000 0x00 0x10000>;
+			interrupts = <0x03>, <0x07>;
 			reg = <0xe1000000 0xc000>;
-			compatible = "sifive,clint0\0riscv,clint0";
+		    compatible = "coreblocks,coreblocks-clint0", "sifive,clint0";
 		};
     };
 
+    aliases {
+        serial0 = &liteuart0;
+    };
 };

@@ -27,7 +27,7 @@ def SoCDemo(soc_cls, **kwargs):
         mem_map_linux = {
             "rom":          0x00000000,
             "sram":         0x01000000,
-            "main_ram":     0x40000000,
+            "main_ram":     0x80000000,
             "csr":          0xe0000000,
             "ethmac":       0xe8000000,
         }
@@ -36,7 +36,7 @@ def SoCDemo(soc_cls, **kwargs):
             soc_cls.mem_map.update(self.mem_map_linux)
             soc_cls.__init__(self,
                              cpu_type="coreblocks",
-                             cpu_variant="standard",
+                             cpu_variant="small_linux",
 
                              **kwargs,
             )

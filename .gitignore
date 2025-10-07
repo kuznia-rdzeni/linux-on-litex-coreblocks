@@ -1,0 +1,14 @@
+__pycache__/
+.venv/
+
+build/
+build_*/
+
+images/*.dtb
+images/*.dtb.tmp
+images/*.cpio*
+images/*.vfat
+images/*.img
+images/rv32_litex_coreblocks.dts
+images/Image
+
