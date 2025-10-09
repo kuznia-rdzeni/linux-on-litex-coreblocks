@@ -2,9 +2,7 @@
 BR2_riscv=y
 BR2_RISCV_32=y
 BR2_RISCV_USE_MMU=n
-
-# Instruction Set Extensions
-BR2_riscv_custom=y
+BR2_RISCV_CUSTOM=y
 BR2_RISCV_ISA_RVM=y
 BR2_RISCV_ISA_RVA=y
 BR2_RISCV_ISA_RVC=n
@@ -21,9 +19,11 @@ BR2_TARGET_GENERIC_GETTY=y
 BR2_TARGET_GENERIC_GETTY_PORT="ttyLXU0"
 
 # Filesystem
+# initrd 
 BR2_TARGET_ROOTFS_CPIO=y
 BR2_TARGET_ROOTFS_CPIO_GZIP=y
 BR2_TARGET_ROOTFS_INITRAMFS=n
+# todo: rootfs + dracut
 
 # Image
 BR2_ROOTFS_POST_IMAGE_SCRIPT="$(BR2_EXTERNAL_LITEX_COREBLOCKS_PATH)/board/litex_coreblocks/post-image.sh"
@@ -42,6 +42,7 @@ BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_6_9=y
 # Built-in Device Tree DTB compilation for kernel (optional, controlled with linux config)
 BR2_LINUX_KERNEL_DTS_SUPPORT=y
 BR2_LINUX_KERNEL_CUSTOM_DTS_PATH="$(BR2_EXTERNAL_LITEX_COREBLOCKS_PATH)/../images/rv32_litex_coreblocks.dts"
+BR2_LINUX_KERNEL_DTS_IS_SELF_BUILT=y
 
 # Rootfs customisation
 BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_LITEX_COREBLOCKS_PATH)/rootfsoverlay"

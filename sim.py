@@ -93,14 +93,14 @@ class SoCLinux(SoCCore):
         # # self.comb += platform.trace.eq(out_countr >= 1051)
        
         # # Trigger recording in cycle window after 'o)' char sequence
-        # trace_start = Signal()
-        # prev_char = Signal(8)
-        # self.sync += If(serial.source_valid, prev_char.eq(serial.source_data))
-        # self.sync += If(trace_start, out_countr.eq(out_countr+1))
-        # self.sync += If(serial.source_valid & (serial.source_data == ord(')')) & (prev_char == ord('o')), trace_en.eq(1))
-        # self.comb += platform.trace.eq(trace_start & (out_countr < 1000000))
+        trace_start = Signal()
+        prev_char = Signal(8)
+        self.sync += If(serial.source_valid, prev_char.eq(serial.source_data))
+        self.sync += If(trace_start, out_countr.eq(out_countr+1))
+        self.sync += If(serial.source_valid & (serial.source_data == ord('!')) & (prev_char == ord('f')), trace_start.eq(1))
+        self.comb += platform.trace.eq(trace_start & (out_countr < 1000000))
 
-        self.comb += platform.trace.eq(1)
+        # self.comb += platform.trace.eq(1)
 
         # Memory boot ------------------------------------------------------------------------------
         

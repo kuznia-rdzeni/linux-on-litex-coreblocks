@@ -33,20 +33,20 @@ def SoCDemo(soc_cls, **kwargs):
         }
 
         def __init__(self, **kwargs):
-            soc_cls.mem_map.update(self.mem_map_linux)
+            self.mem_map.update(self.mem_map_linux)
             soc_cls.__init__(self,
                              cpu_type="coreblocks",
                              cpu_variant="small_linux",
 
                              **kwargs,
             )
-            soc_cls.mem_map.update(self.mem_map_linux)
 
         def add_switches(self):
             #switches = self.platform.request_all("user_sw")
             #self.switches = GPIOIn(switches, with_irq=True)
             # IRQ registered in interrupt_map
-            self.add_uart("uart1", "serial", baudrate=921600)
+            # self.add_uart("uart1", "serial", baudrate=921600)
+            pass
             
 
         def add_leds(self):

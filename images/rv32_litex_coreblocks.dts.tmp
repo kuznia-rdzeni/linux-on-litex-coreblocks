@@ -10,7 +10,7 @@
         bootargs = "console=devLXU0,115200 earlycon=liteuart,0xe0007000 rootwait root=/dev/ram0 rw loglevel=8";
         //bootargs = "earlycon=liteuart,0xe0007000";
         linux,initrd-start = <0x89000000>; // NOTE: update in post-image.sh if changed
-        linux,initrd-end   = <0x89100000>; // relpaced by post-image.sh to real initrd size to .tmp file (packed to SD, doesn't affect builtin dtb).
+        linux,initrd-end   = <0x8907a027>; // relpaced by post-image.sh to real initrd size to .tmp file (packed to SD, doesn't affect builtin dtb).
     };
 
 
