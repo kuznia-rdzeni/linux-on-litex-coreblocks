@@ -103,7 +103,7 @@ class SoCLinux(SoCCore):
         self.sync += If(serial.source_valid, prev_char.eq(serial.source_data))
         self.sync += If(trace_start, out_countr.eq(out_countr+1))
         self.sync += If(serial.source_valid & (serial.source_data == ord('!')) & (prev_char == ord('f')), trace_start.eq(1))
-        self.comb += platform.trace.eq(trace_start & (out_countr > 1000000))
+        self.comb += platform.trace.eq(trace_start & (out_countr < 500000))
 
         # self.comb += platform.trace.eq(1)
 
