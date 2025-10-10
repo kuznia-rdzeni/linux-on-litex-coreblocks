@@ -34,13 +34,13 @@ Build Linux with Buildroot
 --------------------------
 
 ```bash
-git clone https://github.com/buildroot/buildroot --branch 2025.08.x --depth 1 build_buildroot
+git clone https://gitlab.com/buildroot.org/buildroot.git --branch 2025.08.x --depth 1 build_buildroot
 
 # Select and link device tree file (repeat this and next commands for rtl/sim change) 
 # For FPGA target:
-ln -sf images/src/litex_coreblocks.dts images/rv32_litex_coreblocks.dts
+ln -sf src/litex_coreblocks.dts images/rv32_litex_coreblocks.dts
 # For simulation target:
-#ln -sf images/src/sim.dts images/rv32_litex_coreblocks.dts
+#ln -sf src/sim.dts images/rv32_litex_coreblocks.dts
 
 cd build_buildroot
 make BR2_EXTERNAL=../buildroot/ litex_coreblocks_defconfig

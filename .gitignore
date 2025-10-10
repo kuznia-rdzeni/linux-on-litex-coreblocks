@@ -5,7 +5,7 @@ build/
 build_*/
 
 images/*.dtb
-images/*.dtb.tmp
+images/*.dts.tmp
 images/*.cpio*
 images/*.vfat
 images/*.img

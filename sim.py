@@ -58,9 +58,13 @@ class Supervisor(LiteXModule):
 # SoCLinux -----------------------------------------------------------------------------------------
 
 class SoCLinux(SoCCore):
-    mem_map_sim = {
+    sim_mem_map = {
         "main_ram":     0x80000000,
-        "csr":          0xe0000000,
+        "csr":          0xe8000000,
+    }
+
+    csr_map = {
+        "uart": 14,
     }
 
     def __init__(self, sys_clk_freq=int(100e6),
@@ -74,36 +78,37 @@ class SoCLinux(SoCCore):
         self.crg = CRG(platform.request("sys_clk"))
 
         # SoCCore ----------------------------------------------------------------------------------
-        soc = SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
+        self.mem_map.update(self.sim_mem_map)
+        SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
             cpu_type            = "coreblocks",
             cpu_variant         = "small_linux",
             integrated_rom_size = 0x10000,
             uart_name           = "sim",
         )
-        self.mem_map.update(self.mem_map_sim)
         self.add_config("DISABLE_DELAYS")
-        
+
+
         serial = platform.lookup_request("serial")
 
         # Trace Trigger -----------------------------------------------------------------------------
         # Use global --trace option to enable traces (dump in build/sim/gateware/)
-        
+
         # # Trigger recording on UART Liftoff
         # # self.sync += If(serial.source_valid, out_countr.eq(out_countr+1))
         # # self.comb += platform.trace.eq(out_countr >= 1051)
-       
-        # # Trigger recording in cycle window after 'o)' char sequence
+
+        # # Trigger recording in cycle window after 'f!' char sequence (Liftoff!)
         trace_start = Signal()
         prev_char = Signal(8)
         self.sync += If(serial.source_valid, prev_char.eq(serial.source_data))
         self.sync += If(trace_start, out_countr.eq(out_countr+1))
         self.sync += If(serial.source_valid & (serial.source_data == ord('!')) & (prev_char == ord('f')), trace_start.eq(1))
-        self.comb += platform.trace.eq(trace_start & (out_countr < 1000000))
+        self.comb += platform.trace.eq(trace_start & (out_countr > 1000000))
 
         # self.comb += platform.trace.eq(1)
 
         # Memory boot ------------------------------------------------------------------------------
-        
+
         # Fixed for no-mmu configs. Linux `Image` must be loaded at this address in boot.json
         # DTB must be built into kernel, because boot.json 'bootargs' setup to set 'r2' (with dtb pointer)
         # before switch to Linux image from BIOS is not supported.
@@ -119,7 +124,7 @@ class SoCLinux(SoCCore):
         ram_init = []
         if init_memories:
             ram_init = get_mem_data("images/boot.json", endianness="little", offset=boot_addr)
-        
+
         sdram_module = "MT48LC16M16"
         sdram_clk_freq   = int(100e6)
         sdram_module_cls = getattr(litedram_modules, sdram_module)

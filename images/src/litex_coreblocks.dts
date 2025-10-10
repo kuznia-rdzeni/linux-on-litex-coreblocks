@@ -7,10 +7,9 @@
     #size-cells    = <1>;
 
     chosen {
-        bootargs = "console=devLXU0,115200 earlycon=liteuart,0xe0007000 rootwait root=/dev/ram0 rw loglevel=8";
-        //bootargs = "earlycon=liteuart,0xe0007000";
-        linux,initrd-start = <0x89000000>; // NOTE: update in post-image.sh if changed
-        linux,initrd-end   = <0x89100000>; // relpaced by post-image.sh to real initrd size to .tmp file (packed to SD, doesn't affect builtin dtb).
+        bootargs = "console=devLXU0,115200 earlycon=liteuart,0xe8007000 rootwait root=/dev/ram0 rw loglevel=8";
+        linux,initrd-start = <0x82000000>; // NOTE: update in post-image.sh if changed
+        linux,initrd-end   = <0x82100000>; // relpaced by post-image.sh to real initrd size to .tmp file (packed to SD, doesn't affect builtin dtb).
     };
 
 
@@ -46,7 +45,8 @@
 
     memory: memory@80000000 {
         device_type = "memory";
-        reg = <0x80000000 0x10000000>;
+        // important: update size (and initrd load address) if you have smaller DRAM size (<64MiB)!
+        reg = <0x80000000 0x04000000>;
     };
 
     soc {
@@ -56,19 +56,19 @@
         interrupt-parent = <&hlic>;
         ranges;
 
-        soc_ctrl0: soc_controller@e0000000 {
+        soc_ctrl0: soc_controller@e8000000 {
             compatible = "litex,soc-controller";
-            reg = <0xe0000000 0xc>;
+            reg = <0xe8000000 0xc>;
             status = "okay";
         };
 
-        liteuart0: serial@e0007000 {
+        liteuart0: serial@e8007000 {
             compatible = "litex,liteuart";
-            reg = <0xe0007000 0x100>;
+            reg = <0xe8007000 0x100>;
             interrupts = <0x10>;
             status = "okay";
         };
-        
+
         /*
         liteuart1: serial@e0007800 {
             compatible = "litex,liteuart";
@@ -77,7 +77,7 @@
             status = "okay";
         };
         */
-        
+
         clint: clint@e1000000 {
 			interrupts = <0x03>, <0x07>;
 			reg = <0xe1000000 0xc000>;
