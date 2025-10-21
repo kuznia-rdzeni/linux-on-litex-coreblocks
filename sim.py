@@ -17,8 +17,7 @@ from litex.soc.integration.soc_core   import *
 from litex.soc.integration.builder    import *
 
 from litedram import modules as litedram_modules
-from litedram.phy.model       import SDRAMPHYModel
-from litex.tools.litex_sim    import sdram_module_nphases, get_sdram_phy_settings
+from litedram.phy.model       import SDRAMPHYModel, sdram_module_nphases, get_sdram_phy_settings
 
 from litex.tools.litex_json2dts_linux import generate_dts
 
