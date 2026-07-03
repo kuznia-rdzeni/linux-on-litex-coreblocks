@@ -52,10 +52,10 @@ There are multiple methods of uploading the required images and loading them int
 
 ### 1. Serial boot
 
-It is slow. Recomended only for first attempts. You may want to increase the serial speed to `921600` baud in `soc.py`.
+It is slow. Recomended only for first attempts. `921600` baud in recomended.
 
 ```bash
-litex_term /dev/ttyUSBX --speed 115200 --images images/boot.json
+litex_term /dev/ttyUSBX --speed 921600 --images images/boot.json
 ```
 
 ### 2. SD card boot
@@ -102,6 +102,6 @@ Notes
 -----
 
 * This is still in Work in progress state, YMMV. Contributions welcome.
-* Due to using only Linux core-local (RISC-V Hart-Local) interrupt controller, many drivers are broken - ex. serial driver fall-backs to polling. (Will fix)
 * Arty A7 build tested with Vivado 2024.2 (there are workarounds for Vivado verisions >=2023.1 synthesis included in Coreblocks).
+* With devicetree built into the kernel image (default), after dts modification you need to run `make linux-rebuild` manually first.
 

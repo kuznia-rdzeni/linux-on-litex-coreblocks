@@ -7,7 +7,7 @@
     #size-cells    = <1>;
 
     chosen {
-        bootargs = "console=ttyLXU0,115200 earlycon=liteuart,0xe8007000 rootwait root=/dev/ram0 rw loglevel=8";
+        bootargs = "console=ttyLXU0,921600 earlycon=liteuart,0xe8007000 rootwait root=/dev/ram0 rw loglevel=8";
         linux,initrd-start = <0x82000000>; // NOTE: update in post-image.sh if changed
         linux,initrd-end   = <0x82100000>; // relpaced by post-image.sh to real initrd size to .tmp file (packed to SD, doesn't affect builtin dtb).
     };
@@ -53,7 +53,7 @@
         #address-cells = <1>;
         #size-cells    = <1>;
         compatible = "simple-bus";
-        interrupt-parent = <&hlic>;
+        interrupt-parent = <&plic>;
         ranges;
 
         soc_ctrl0: soc_controller@e8000000 {
@@ -65,7 +65,7 @@
         liteuart0: serial@e8007000 {
             compatible = "litex,liteuart";
             reg = <0xe8007000 0x100>;
-            interrupts = <0x10>;
+            interrupts = <0x2>;
             status = "okay";
         };
 
@@ -79,10 +79,20 @@
         */
 
         clint: clint@e1000000 {
-			interrupts = <0x03>, <0x07>;
+			interrupts-extended = <&hlic 3>, <&hlic 7>;
 			reg = <0xe1000000 0xc000>;
 		    compatible = "coreblocks,coreblocks-clint0", "sifive,clint0";
-	};
+	    };
+
+        plic: plic@e2000000 {
+            compatible = "coreblocks,coreblocks-plic", "sifive,plic-1.0.0";
+            reg = <0xe2000000 0x4000000>;
+            #address-cells = <0>;
+            #interrupt-cells = <1>;
+            interrupt-controller;
+            interrupts-extended = <&hlic 11>; // MEI
+            riscv,ndev = <15>; // number of supported interrupts, without the reserved one
+        };
     };
 
     aliases {

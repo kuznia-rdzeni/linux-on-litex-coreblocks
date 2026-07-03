@@ -17,8 +17,8 @@ def SoCDemo(soc_cls, **kwargs):
         }}
 
         interrupt_map = {**soc_cls.interrupt_map, **{
-            "uart":       0,
             "timer0":     1,
+            "uart":       2,
             "ethmac":     3,
             #"switches":   4,
             "uart1":      5,

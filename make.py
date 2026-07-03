@@ -13,10 +13,11 @@ class Board:
     def __init__(self, soc_cls):
         self.soc_cls = soc_cls
         self.soc_kwargs = {
-                "with_ethernet": True,
                 "l2_size": 1024,
                 "integrated_rom_size": 0xC000,
-                "with_led_chaser": False,
+                "integrated_main_ram_size": 0,
+                "uart_baudrate": 921600,
+                "with_led_chaser": True,
         }
 
     def load(self, soc, filename):
@@ -114,13 +115,6 @@ def main():
     # Generate SoC documentation ---------------------------------------------------------------
     if args.doc:
         soc.generate_doc(board_name)
-
-        json_src = os.path.join("build", board_name, "csr.json")
-        dts = os.path.join("build", board_name, "{}.dts".format(board_name))
-
-        with open(json_src) as json_file, open(dts, "w") as dts_file:
-            dts_content = generate_dts(json.load(json_file), polling=False)
-            dts_file.write(dts_content)
 
 if __name__ == "__main__":
     main()
