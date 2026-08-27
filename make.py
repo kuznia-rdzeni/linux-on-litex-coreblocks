@@ -65,8 +65,20 @@ class ArtyA7Board(Board):
         soc.platform.add_extension(digilent_arty._sdcard_pmod_io)
         soc.add_sdcard()
 
+class RkXcku5p(Board):
+    board_name = "aliexpress_rk_xcku5p"
 
-supported_boards = [TerasicDe2115Board, ArtyA7Board]
+    def __init__(self):
+        from litex_boards.targets import aliexpress_rk_xcku5p
+        super().__init__(soc_cls=aliexpress_rk_xcku5p.BaseSoC)
+
+        self.soc_kwargs.update(**{
+            "sys_clk_freq": 100e6,
+            "toolchain": "vivado",
+        })
+
+
+supported_boards = [TerasicDe2115Board, ArtyA7Board, RkXcku5p]
 
 def main():
     description = "Demo Coreblocks SoC"
@@ -75,7 +87,7 @@ def main():
     parser.add_argument("--load",           action="store_true",         help="Load bitstream (to SRAM).")
     parser.add_argument("--flash",          action="store_true",         help="Flash bitstream/images (to Flash).")
     parser.add_argument("--doc",            action="store_true",         help="Build documentation.")
-    parser.add_argument("--board",          action="store",              help="Select board target.", default="digilent_arty")
+    parser.add_argument("--board",          action="store",              help="Select board target.", default="aliexpress_rk_xcku5p")
 
     args = parser.parse_args()
 
