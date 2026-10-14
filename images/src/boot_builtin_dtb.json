@@ -1,5 +1,5 @@
 {
-    "rootfs.cpio.gz"    : "0x82000000",
-
-    "Image"             : "0x80000000"
+    "rootfs.cpio.gz"    : "0x84000000",
+    "Image"             : "0x80400000",
+    "opensbi.bin"	: "0x80000000"
 }

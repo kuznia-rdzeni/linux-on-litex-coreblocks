@@ -7,22 +7,22 @@
     #size-cells    = <1>;
 
     chosen {
-        bootargs = "console=ttyLXU0,921600 earlycon=liteuart,0xe8007000 rootwait root=/dev/ram0 rw loglevel=8";
-        linux,initrd-start = <0x82000000>; // NOTE: update in post-image.sh if changed
-        linux,initrd-end   = <0x82100000>; // relpaced by post-image.sh to real initrd size to .tmp file (packed to SD, doesn't affect builtin dtb).
+        bootargs = "console=ttyLXU0,921600 earlycon=sbi rootwait root=/dev/ram0 rw loglevel=8 initcall_debug";
+        linux,initrd-start = <0x84000000>; // NOTE: update in post-image.sh if changed
+        linux,initrd-end   = <0x86000000>; // relpaced by post-image.sh to real initrd size to .tmp file (packed to SD, doesn't affect builtin dtb).
     };
 
 
-    sys_clk: clock-40000000 {
+    sys_clk: clock {
         compatible = "fixed-clock";
         #clock-cells = <0>;
-        clock-frequency  = <40000000>;
+        clock-frequency  = <100000000>;
     };
 
 	cpus {
         #address-cells = <1>;
         #size-cells    = <0>;
-        timebase-frequency = <40000000>;
+        timebase-frequency = <100000000>;
 
         CPU0: cpu@0 {
             device_type = "cpu";
@@ -30,9 +30,9 @@
             riscv,isa = "rv32ima";
             riscv,isa-base = "rv32";
             riscv,isa-extensions = "a", "i", "m";
-            mmu-type = "riscv,none";
+            mmu-type = "riscv,rv32";
             reg = <0>;
-            clock-frequency = <40000000>;
+            clock-frequency = <100000000>;
             status = "okay";
 
 			hlic: interrupt-controller {
@@ -45,8 +45,8 @@
 
     memory: memory@80000000 {
         device_type = "memory";
-        // important: update size (and initrd load address) if you have smaller DRAM size (<64MiB)!
-        reg = <0x80000000 0x04000000>;
+        // important: update size (and initrd load address) if you have smaller DRAM size (<128MiB)!
+        reg = <0x80000000 0x08000000>;
     };
 
     soc {

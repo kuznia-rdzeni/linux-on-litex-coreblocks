@@ -9,6 +9,7 @@ images/*.dts.tmp
 images/*.cpio*
 images/*.vfat
 images/*.img
+images/*.bin
 images/rv32_litex_coreblocks.dts
 images/Image
 
