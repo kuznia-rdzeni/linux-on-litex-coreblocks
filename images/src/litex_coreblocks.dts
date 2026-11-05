@@ -30,7 +30,7 @@
             riscv,isa = "rv32ima";
             riscv,isa-base = "rv32";
             riscv,isa-extensions = "a", "i", "m";
-            mmu-type = "riscv,rv32";
+            mmu-type = "riscv,sv32";
             reg = <0>;
             clock-frequency = <100000000>;
             status = "okay";
@@ -90,7 +90,7 @@
             #address-cells = <0>;
             #interrupt-cells = <1>;
             interrupt-controller;
-            interrupts-extended = <&hlic 11>; // MEI
+            interrupts-extended = <&hlic 11>, <&hlic 9>; // MEI, SEI
             riscv,ndev = <15>; // number of supported interrupts, without the reserved one
         };
     };
