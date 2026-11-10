@@ -7,7 +7,7 @@
     #size-cells    = <1>;
 
     chosen {
-        bootargs = "console=ttyLXU0,921600 earlycon=sbi rootwait root=/dev/ram0 rw loglevel=8 initcall_debug";
+        bootargs = "console=ttyLXU0 earlycon=sbi rootwait root=/dev/ram0 rw loglevel=8";
         linux,initrd-start = <0x84000000>; // NOTE: update in post-image.sh if changed
         linux,initrd-end   = <0x86000000>; // relpaced by post-image.sh to real initrd size to .tmp file (packed to SD, doesn't affect builtin dtb).
     };
