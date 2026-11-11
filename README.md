@@ -3,7 +3,7 @@ Linux on LiteX Coreblocks
 
 Linux + buildroot + LiteX configurations for example SoC with Coreblocks running Linux.
 
-Currently there is no virtual memory support and no supervisor mode in Coreblocks - this is no-MMU kernel variant, with kernel running in machine mode configuration.
+A full, virtualised linux is supported; with Litex loader and OpenSBI M-mode interface.
 
 Prerequisites
 ------------
@@ -17,6 +17,10 @@ Make sure to checkout the latest commit, and do the `full` config installation o
 
 Usual build stuff required for buildroot.
 
+### Note
+
+There is an (highly) expermiental Nix enviroment project [kuznia-nix-env](https://codeberg.org/ariac/kuznia-nix-env), that will setup everything for you, automates builds and flashes, is easy to integrate with local coreblocks changes, and provides (mostly) reproducible environment. But you need to be *ready* to see it, I warned you.
+
 Build Linux with Buildroot
 --------------------------
 
@@ -28,6 +32,9 @@ git clone https://gitlab.com/buildroot.org/buildroot.git --branch 2025.08.x --de
 ln -sf src/litex_coreblocks.dts images/rv32_litex_coreblocks.dts
 # For simulation target:
 # ln -sf src/sim.dts images/rv32_litex_coreblocks.dts
+
+# Prebuild device tree for the OpenSBI
+dtc -O dtb images/rv32_litex_coreblocks.dts -o images/rv32_litex_coreblocks.dtb
 
 cd build_buildroot
 make BR2_EXTERNAL=../buildroot/ litex_coreblocks_defconfig
@@ -71,10 +78,12 @@ Image contains one vfat partition with the kernel image, initrd file system, and
 
 ### 3. Network boot
 
-Not tested yet.
+Use `with_ethernet` (incompatibile with `with_etherbone`), serve `images/` via TFTP to pre-assigned IP addresses.
 
 
 ### 4. Simulation
+
+**FIXME - it's probably broken now**
 
 Very slow - change `images/rv32_litex_coreblocks.dts` link to `sim.dts` device tree, rebuild buildroot kernel and image.
 
@@ -102,6 +111,6 @@ Notes
 -----
 
 * This is still in Work in progress state, YMMV. Contributions welcome.
-* Arty A7 build tested with Vivado 2024.2 (there are workarounds for Vivado verisions >=2023.1 synthesis included in Coreblocks).
-* With devicetree built into the kernel image (default), after dts modification you need to run `make linux-rebuild` manually first.
+* Vivado >=2023.1 synthesis, recommended.
+* Buildroot doesn't handle dependecy and config changes tracking well enough in some cases, `make opensbi-dirclean` (like after dts change), `make linux-dirclean` and `make clean` in last resort, are your friends. 
 
